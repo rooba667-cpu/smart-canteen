@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Order Confirmed – Smart Canteen</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <a href="/" class="navbar-brand">
+      <div class="brand-icon">🍽️</div>Smart Canteen
+    </a>
+    <ul class="navbar-nav">
+      <li><a href="/menu" class="nav-link">📋 Menu</a></li>
+      <li><a href="/orders" class="nav-link">📦 My Orders</a></li>
+      <li><a href="/placed-orders" class="nav-link">📜 Placed Orders</a></li>
+      <li><a href="/logout" class="nav-link btn-nav">👋 Logout</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hidden input for JS polling -->
+  <input type="hidden" id="order-id-val" value="{{ order.order_id }}">
+
+  <div style="background:#f5f6fa;min-height:calc(100vh - 70px);padding:2rem 1rem">
+    <div class="confirmation-page">
+
+      <div class="confirmation-card">
+        <!-- Header -->
+        <div class="confirmation-header">
+          <div class="check-icon">✅</div>
+          <h2>Order Placed Successfully!</h2>
+          <p style="opacity:.85">Your food is being prepared. Show the Order ID at the counter.</p>
+          <div class="order-id-badge">🧾 {{ order.order_id }}</div>
+        </div>
+
+        <!-- Body -->
+        <div class="confirmation-body">
+
+          <!-- Info Grid -->
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">👤 Student</div>
+              <div class="info-value">{{ order.student_name }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">⏰ Pickup Time</div>
+              <div class="info-value highlight">{{ order.pickup_time }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">⏱️ Est. Prep Time</div>
+              <div class="info-value highlight">{{ order.prep_time }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">📅 Ordered At</div>
+              <div class="info-value" style="font-size:.85rem">
+                {{ order.created_at.strftime('%d %b, %H:%M') if order.created_at else '—' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Status -->
+          <!-- <div
+            style="background:var(--light);border-radius:var(--radius-sm);padding:1rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+            <span style="font-weight:600;font-size:.9rem">📡 Live Status</span>
+            <span id="live-status-badge" class="status-badge {{ order.status }}">{{ order.status }}</span>
+          </div> -->
+
+          <!-- Status Tracker -->
+          <!-- <div class="status-tracker">
+            {% set steps = [('Pending','🕐'),('Accepted','✅'),('Preparing','👨‍🍳'),('Ready','🔔'),('Completed','🎉')]
+            %}
+            {% set current_idx = ['Pending','Accepted','Preparing','Ready','Completed'].index(order.status) if
+            order.status in ['Pending','Accepted','Preparing','Ready','Completed'] else 0 %}
+            {% for name, icon in steps %}
+            {% set step_idx = loop.index0 %}
+            <div class="status-step
+            {% if step_idx < current_idx %}completed
+            {% elif step_idx == current_idx %}active{% endif %}">
+              <div class="step-dot">{{ icon }}</div>
+              <div class="step-label">{{ name }}</div>
+            </div>
+            {% endfor %}
+          </div> -->
+
+          <!-- Order Items -->
+          <h4 style="font-size:.95rem;font-weight:700;margin-bottom:.8rem">🧾 Ordered Items</h4>
+          <div class="order-items-list">
+            {% for item in items %}
+            <div class="item-row">
+              <span>{{ item.name }} × {{ item.quantity }}</span>
+              <span>₹{{ "%.2f"|format(item.unit_price * item.quantity) }}</span>
+            </div>
+            {% endfor %}
+            <div class="item-row total-row">
+              <span>💰 Total Amount</span>
+              <span>₹{{ "%.2f"|format(order.total_amount) }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.5rem">
+            <a href="/menu" class="btn btn-primary" style="flex:1;justify-content:center">🍽️ Order More</a>
+            <a href="/orders" class="btn btn-outline-dark" style="flex:1;justify-content:center">📦 My Orders</a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>🍽️ <strong>Smart Canteen</strong> – Pre-Order System</p>
+  </footer>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+
+</html>

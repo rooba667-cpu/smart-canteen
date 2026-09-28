@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Menu – Smart Canteen</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="/" class="navbar-brand"><div class="brand-icon">🍽️</div>Smart Canteen</a>
+  <button class="hamburger"><span></span><span></span><span></span></button>
+  <ul class="navbar-nav">
+    <li><a href="/"      class="nav-link">🏠 Home</a></li>
+    <li><a href="/menu"  class="nav-link active">📋 Menu</a></li>
+    <li>
+      <a href="/cart" class="nav-link">
+        🛒 Cart <span class="cart-badge cart-count" style="display:none">0</span>
+      </a>
+    </li>
+    <li><a href="/orders"        class="nav-link">📦 My Orders</a></li>
+    <li><a href="/placed-orders" class="nav-link">📜 Placed Orders</a></li>
+    <li><a href="/logout"        class="nav-link btn-nav">👋 Logout</a></li>
+  </ul>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-container">
+  {% for cat, msg in messages %}
+  <div class="alert alert-{{ cat }}">{{ msg }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-content">
+    <h1>📋 Our Menu</h1>
+    <p>Fresh, hot and delicious – pre-order your favourites!</p>
+  </div>
+</div>
+
+<!-- MENU BODY -->
+<div class="section container" style="padding-top:3rem">
+
+  <!-- Search + Tabs -->
+  <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.5rem">
+    <div style="flex:1;min-width:220px;max-width:360px">
+      <input type="text" id="menu-search" class="form-control" placeholder="🔍  Search food items…">
+    </div>
+    <div class="category-tabs">
+      <button class="tab-btn active" data-cat="all">🍽️ All</button>
+      {% for cat in categories %}
+      <button class="tab-btn" data-cat="{{ cat }}">
+        {% if cat == 'Breakfast' %}🌅
+        {% elif cat == 'Meals'   %}🍱
+        {% elif cat == 'Snacks'  %}🥪
+        {% elif cat == 'Drinks'  %}🥤
+        {% endif %} {{ cat }}
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Food Sections -->
+  {% set cat_icons = {'Breakfast':'🌅','Meals':'🍱','Snacks':'🥪','Drinks':'🥤'} %}
+  {% set food_emojis = {
+    'Masala Dosa':'🫓','Idli Sambar':'🥣','Poha':'🍚','Upma':'🥘',
+    'Veg Thali':'🍱','Chicken Biryani':'🍛','Paneer Rice':'🍚','Chole Bhature':'🫓',
+    'Samosa':'🥟','Vada Pav':'🥙','Bhel Puri':'🥗','Bread Pakora':'🍞',
+    'Cold Coffee':'☕','Mango Lassi':'🥛','Masala Chai':'🍵','Fresh Lime Soda':'🍋'
+  } %}
+
+  {% for cat, items in categories.items() %}
+  <div class="category-section" data-cat="{{ cat }}">
+    <h2 class="category-title">{{ cat_icons.get(cat,'🍽️') }} {{ cat }}</h2>
+    <div class="food-grid">
+      {% for item in items %}
+      <div class="col-item">
+        <div class="food-card">
+          <div class="food-card-image">
+            {% if item.is_available %}
+            <span class="food-badge">Available</span>
+            {% else %}
+            <span class="food-badge unavailable">Unavailable</span>
+            {% endif %}
+            <span>{{ food_emojis.get(item.name, '🍽️') }}</span>
+          </div>
+          <div class="food-card-body">
+            <h4>{{ item.name }}</h4>
+            <p>{{ item.description }}</p>
+            <div class="food-card-footer">
+              <div class="price">₹{{ "%.0f"|format(item.price) }} <span>/ plate</span></div>
+              {% if item.is_available %}
+              <button class="add-to-cart-btn"
+                onclick="addToCart({{ item.id }}, '{{ item.name }}', {{ item.price }}, '{{ food_emojis.get(item.name,'🍽️') }}');
+                         this.textContent='✅ Added';this.classList.add('added');
+                         setTimeout(()=>{this.textContent='+ Add';this.classList.remove('added')},1500)">
+                + Add
+              </button>
+              {% else %}
+              <button class="add-to-cart-btn" disabled style="opacity:.5;cursor:not-allowed">Not Available</button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  {% if not categories %}
+  <div class="no-orders">
+    <div class="icon">😕</div>
+    <p>No food items available at the moment. Check back soon!</p>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Floating Cart Button -->
+<a href="/cart" style="
+  position:fixed;bottom:2rem;right:2rem;background:var(--gradient);
+  color:#fff;width:62px;height:62px;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;font-size:1.6rem;
+  box-shadow:0 8px 25px rgba(255,107,53,.5);z-index:900;text-decoration:none;
+  transition:transform .2s" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+  🛒
+  <span class="cart-count" style="position:absolute;top:-4px;right:-4px;background:#e74c3c;
+    color:#fff;border-radius:50%;width:22px;height:22px;font-size:.72rem;font-weight:700;
+    display:none;align-items:center;justify-content:center">0</span>
+</a>
+
+<footer class="footer"><p>🍽️ <strong>Smart Canteen</strong> – Pre-Order System</p></footer>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
